@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Infografía Nutricional - María Auxiliadora</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+<!-- 
+PALETA ELEGIDA: "Brillante y Energética" (Azul Real #1E88E5, Ámbar Intenso #FFC107, Esmeralda #00C853)
+CONFIRMACIÓN: No se utiliza SVG ni Mermaid JS. Iconografía basada en Unicode y CSS estructurado.
+-->
+<style>
+:root { --primary: #1E88E5; --secondary: #FFC107; --bg: #F8FAFC; }
+body { background-color: var(--bg); font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: #1E293B; }
+.card { background: white; border-radius: 1rem; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); padding: 1.5rem; border: 1px solid #E2E8F0; }
+.chart-container { position: relative; width: 100%; max-width: 650px; margin-left: auto; margin-right: auto; height: 320px; max-height: 380px; }
+.vibrant-gradient { background: linear-gradient(135deg, #1E88E5 0%, #0D47A1 100%); }
+.table-compact { width: 100%; border-collapse: separate; border-spacing: 0; border: 1px solid #CBD5E1; border-radius: 0.5rem; overflow: hidden; }
+.table-compact th { background-color: #F1F5F9; color: #475569; font-size: 0.65rem; text-transform: uppercase; font-weight: 800; padding: 0.5rem; border-bottom: 2px solid #CBD5E1; border-right: 1px solid #CBD5E1; }
+.table-compact td { font-size: 0.7rem; padding: 0.45rem; border-bottom: 1px solid #E2E8F0; border-right: 1px solid #E2E8F0; vertical-align: top; }
+.col-recom { background-color: #FFFBEB; font-style: italic; color: #92400E; font-size: 0.65rem !important; }
+.badge { display: inline-block; padding: 2px 6px; border-radius: 4px; font-weight: bold; font-size: 0.6rem; margin: 1px; }
+.badge-no { background-color: #FEE2E2; color: #991B1B; }
+.badge-yes { background-color: #D1FAE5; color: #065F46; }
+@media print {
+@page { size: A4 landscape; margin: 5mm; }
+.no-print { display: none !important; }
+body { background: white; padding: 0; }
+.card { box-shadow: none; border: 1px solid #ccc; margin-bottom: 10px; }
+.break-page { page-break-before: always; }
+}
+</style>
+</head>
+<body class="p-4 md:p-8">
+
+<header class="vibrant-gradient text-white p-6 rounded-2xl shadow-2xl mb-8 flex flex-col md:flex-row justify-between items-center gap-4">
+<div class="text-center md:text-left">
+<h1 class="text-3xl font-black tracking-tighter">INFOGRAFÍA NUTRICIONAL BARIÁTRICA</h1>
+<p class="text-blue-100 font-bold uppercase text-xs tracking-widest mt-1">Paciente: María Auxiliadora | Plan Estratégico de 21 Días</p>
+</div>
+<button onclick="window.print()" class="no-print bg-amber-400 text-amber-950 px-8 py-3 rounded-full font-black hover:bg-amber-300 transition-all shadow-lg flex items-center gap-2">
+<span>🖨️ IMPRIMIR PARA FRIGORÍFICO</span>
+</button>
+</header>
+
+<main class="space-y-10">
+
+<section class="no-print space-y-4">
+<div class="card bg-blue-50 border-blue-200">
+<h2 class="text-xl font-black text-blue-900 mb-2 uppercase">Narrativa del Plan</h2>
+<p class="text-sm text-blue-800 leading-relaxed">
+Este plan ha sido diseñado analizando tus informes médicos de 2020/21 y adaptándolos a tu realidad actual. El objetivo es una <strong>pérdida progresiva</strong> de 20kg priorizando la densidad proteica. Hemos eliminado los alimentos que te causan rechazo (pepino, calabacín, guisantes) e integrado la <strong>patata</strong> como carbohidrato de calidad para mejorar la adherencia. Se recomienda cocinar siempre al horno o microondas para evitar grasas saturadas.
+</p>
+</div>
+</section>
+
+<section class="grid grid-cols-1 lg:grid-cols-2 gap-8 no-print">
+<div class="card flex flex-col">
+<h3 class="text-lg font-black text-slate-800 mb-2">📊 Composición de Nutrientes por Ingesta</h3>
+<p class="text-xs text-slate-500 mb-4">Análisis porcentual de grupos alimenticios para garantizar la saciedad bariátrica.</p>
+<div class="chart-container flex-grow">
+<canvas id="compositionChart"></canvas>
+</div>
+</div>
+<div class="card flex flex-col">
+<h3 class="text-lg font-black text-slate-800 mb-2">🔥 Frecuencia de Alimentos Estrella</h3>
+<p class="text-xs text-slate-500 mb-4">Distribución semanal de proteínas y carbohidratos complejos (Patata/Legumbres).</p>
+<div id="frequencyPlot" class="w-full flex-grow h-[300px]"></div>
+</div>
+</section>
+
+<section class="card bg-amber-50 border-amber-200 no-print">
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<div>
+<h4 class="text-sm font-black text-amber-900 mb-2 uppercase">🚫 Alimentos Excluidos</h4>
+<div class="flex flex-wrap gap-1">
+<span class="badge badge-no">Pepino</span><span class="badge badge-no">Calabacín</span><span class="badge badge-no">Guisantes</span>
+<span class="badge badge-no">Piña</span><span class="badge badge-no">Espárragos</span><span class="badge badge-no">Alcachofa</span>
+<span class="badge badge-no">Brócoli</span><span class="badge badge-no">Coliflor</span><span class="badge badge-no">Habas</span>
+</div>
+</div>
+<div>
+<h4 class="text-sm font-black text-emerald-900 mb-2 uppercase">✅ Alimentos de Éxito</h4>
+<div class="flex flex-wrap gap-1">
+<span class="badge badge-yes">Patata Asada</span><span class="badge badge-yes">Patata Micro</span>
+<span class="badge badge-yes">Judías Verdes</span><span class="badge badge-yes">Zanahoria</span>
+<span class="badge badge-yes">Pescado Blanco</span><span class="badge badge-yes">Champiñón</span>
+</div>
+</div>
+</div>
+</section>
+
+<section class="space-y-12">
+<!-- SEMANA 1 -->
+<div class="card border-t-8 border-blue-500 p-0 overflow-hidden">
+<div class="p-4 bg-blue-500 text-white font-black text-sm uppercase tracking-widest flex justify-between">
+<span>Semana 1: Re-inicio y Control</span>
+<span>Fase: Re-adaptación</span>
+</div>
+<div class="overflow-x-auto">
+<table class="table-compact">
+<thead>
+<tr>
+<th class="w-[6%]">Día</th>
+<th class="w-[12%]">Desayuno</th>
+<th class="w-[10%]">M. Mañana</th>
+<th class="w-[20%]">Almuerzo</th>
+<th class="w-[10%]">Merienda</th>
+<th class="w-[20%]">Cena</th>
+<th class="col-recom">Recomendaciones / Notas</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="font-bold bg-slate-50 text-center">LUN</td>
+<td rowspan="7" class="font-medium">Café con leche desnatada + 2 tostadas integrales con pavo (60g)</td>
+<td rowspan="7" class="text-center italic">1 Pera o 1 Yogur 0%</td>
+<td>Pollo plancha + <strong>Patata microondas</strong></td>
+<td rowspan="7" class="text-center italic">Yogur 0% o 30g Almendras</td>
+<td>Tortilla (2h) + Ensalada Tomate</td>
+<td class="col-recom">Pincha la patata antes del micro. Añade pimentón.</td>
+</tr>
+<tr>
+<td class="font-bold bg-slate-50 text-center">MAR</td>
+<td>Lentejas con zanahoria y judías verdes</td>
+<td>Merluza al horno con cebolla y pimientos</td>
+<td class="col-recom">Sin guisantes. Usa las judías para dar textura.</td>
+</tr>
+<tr>
+<td class="font-bold bg-slate-50 text-center">MIÉ</td>
+<td>Ternera magra + Champiñones al ajillo</td>
+<td>Atún natural y Huevo duro (Ensalada)</td>
+<td class="col-recom">En la ensalada: Lechuga o Canónigos (Sin pepino).</td>
+</tr>
+<tr>
+<td class="font-bold bg-slate-50 text-center">JUE</td>
+<td>Garbanzos con espinacas y pimentón</td>
+<td>Sepia a la plancha + Lechuga aliñada</td>
+<td class="col-recom">Mastica la sepia muy bien. Es proteína densa.</td>
+</tr>
+<tr>
+<td class="font-bold bg-slate-50 text-center">VIE</td>
+<td>Conejo o Pollo + <strong>Patata asada</strong></td>
+<td>Revuelto de champiñones y gambas</td>
+<td class="col-recom">La patata asada sacia más que la cocida.</td>
+</tr>
+<tr>
+<td class="font-bold bg-slate-50 text-center">SÁB</td>
+<td>Arroz integral (50g) con verduras (Pimiento/Zan)</td>
+<td>Salmón a la plancha + Judías verdes</td>
+<td class="col-recom">Cena rica en Omega 3 para desajustes regla.</td>
+</tr>
+<tr>
+<td class="font-bold bg-slate-50 text-center">DOM</td>
+<td>Cocido ligero (Pollo, Ternera, Garbanzos)</td>
+<td>Crema de zanahoria y <strong>patata</strong> + Pavo</td>
+<td class="col-recom">Crema espesa solo con verdura y patata.</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+
+<!-- SEMANA 2 -->
+<div class="card border-t-8 border-purple-500 p-0 overflow-hidden break-page">
+<div class="p-4 bg-purple-500 text-white font-black text-sm uppercase tracking-widest flex justify-between">
+<span>Semana 2: Variedad y Equilibrio</span>
+<span>Fase: Progresión</span>
+</div>
+<div class="overflow-x-auto">
+<table class="table-compact">
+<thead>
+<tr>
+<th class="w-[6%]">Día</th>
+<th class="w-[12%]">Desayuno</th>
+<th class="w-[10%]">M. Mañana</th>
+<th class="w-[20%]">Almuerzo</th>
+<th class="w-[10%]">Merienda</th>
+<th class="w-[20%]">Cena</th>
+<th class="col-recom">Recomendaciones / Notas</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="font-bold bg-slate-50 text-center">LUN</td>
+<td rowspan="7" class="font-medium">Leche desnatada + 2 tostadas con queso fresco 0%</td>
+<td rowspan="7" class="text-center italic">1 Manzana o 1 Kiwi</td>
+<td>Muslo pollo asado + Berenjenas plancha</td>
+<td rowspan="7" class="text-center italic">30g Nueces o Queso fresco</td>
+<td>Dorada al horno con <strong>rodajas de patata</strong></td>
+<td class="col-recom">Corta la patata fina para que se ase rápido.</td>
+</tr>
+<tr>
+<td class="font-bold bg-slate-50 text-center">MAR</td>
+<td>Alubias blancas con judías y zanahoria</td>
+<td>Hamburguesa pavo (Sin Pan) + Tomate</td>
+<td class="col-recom">Hamburguesa casera para evitar aditivos.</td>
+</tr>
+<tr>
+<td class="font-bold bg-slate-50 text-center">MIÉ</td>
+<td>Caballa o Sardinas + Pimientos asados</td>
+<td>Jamón York + Queso Burgos + <strong>Patata micro</strong></td>
+<td class="col-recom">Cena rápida y rica en calcio.</td>
+</tr>
+<tr>
+<td class="font-bold bg-slate-50 text-center">JUE</td>
+<td>Ternera magra + Judías verdes salteadas</td>
+<td>Crema de calabaza y zanahoria + Tortilla</td>
+<td class="col-recom">Usa calabaza asada para la crema.</td>
+</tr>
+<tr>
+<td class="font-bold bg-slate-50 text-center">VIE</td>
+<td>Arroz con calamares y pimientos rojos</td>
+<td>Ensalada de pollo asado y rúcula</td>
+<td class="col-recom">Sin guisantes. Pon pimiento rojo extra.</td>
+</tr>
+<tr>
+<td class="font-bold bg-slate-50 text-center">SÁB</td>
+<td>Albóndigas de pollo caseras (Tomate)</td>
+<td>Lenguado a la plancha + Judías verdes</td>
+<td class="col-recom">Acompaña las albóndigas con poca patata.</td>
+</tr>
+<tr>
+<td class="font-bold bg-slate-50 text-center">DOM</td>
+<td>Paella de verduras y magro (Prioriza magro)</td>
+<td>Consomé vegetal + 2 Huevos duros</td>
+<td class="col-recom">Mastica 20 veces cada trozo de magro.</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+
+<!-- SEMANA 3 -->
+<div class="card border-t-8 border-orange-500 p-0 overflow-hidden break-page">
+<div class="p-4 bg-orange-500 text-white font-black text-sm uppercase tracking-widest flex justify-between">
+<span>Semana 3: Consolidación</span>
+<span>Fase: Hábito</span>
+</div>
+<div class="overflow-x-auto">
+<table class="table-compact">
+<thead>
+<tr>
+<th class="w-[6%]">Día</th>
+<th class="w-[12%]">Desayuno</th>
+<th class="w-[10%]">M. Mañana</th>
+<th class="w-[20%]">Almuerzo</th>
+<th class="w-[10%]">Merienda</th>
+<th class="w-[20%]">Cena</th>
+<th class="col-recom">Recomendaciones / Notas</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="font-bold bg-slate-50 text-center">LUN</td>
+<td rowspan="7" class="font-medium">Café con leche + Tostadas con pavo o queso</td>
+<td rowspan="7" class="text-center italic">Fruta (No piña)</td>
+<td>Lentejas estofadas con <strong>patata</strong> y zanahoria</td>
+<td rowspan="7" class="text-center italic">Yogur desnatado 0%</td>
+<td>Salpicón de marisco (Sin pepino/guisantes)</td>
+<td class="col-recom">Marisco: Gambas, mejillones y pimiento.</td>
+</tr>
+<tr>
+<td class="font-bold bg-slate-50 text-center">MAR</td>
+<td>Pollo relleno de espinacas y queso light</td>
+<td>Merluza en papillote con zanahoria</td>
+<td class="col-recom">El papillote conserva el sabor del pescado.</td>
+</tr>
+<tr>
+<td class="font-bold bg-slate-50 text-center">MIÉ</td>
+<td>Pasta integral (50g) Boloñesa de pavo</td>
+<td>Revuelto de champiñones y gambas</td>
+<td class="col-recom">Pasta: Al dente para mayor saciedad.</td>
+</tr>
+<tr>
+<td class="font-bold bg-slate-50 text-center">JUE</td>
+<td>Pescado blanco + <strong>Patata al horno</strong></td>
+<td>Tomate con queso fresco y orégano</td>
+<td class="col-recom">Cena ligera estilo Caprese (Sin pepino).</td>
+</tr>
+<tr>
+<td class="font-bold bg-slate-50 text-center">VIE</td>
+<td>Guiso de pavo con champiñones y zanahoria</td>
+<td>Tortilla de espinacas + Lechuga</td>
+<td class="col-recom">Pavo cortado pequeño para vaciado gástrico.</td>
+</tr>
+<tr>
+<td class="font-bold bg-slate-50 text-center">SÁB</td>
+<td>Bistec de ternera + <strong>Patata micro</strong></td>
+<td>Pescado al horno con berenjena</td>
+<td class="col-recom">Ternera magra: solomillo o babilla.</td>
+</tr>
+<tr>
+<td class="font-bold bg-slate-50 text-center">DOM</td>
+<td>Garbanzos con bacalao y espinacas</td>
+<td>Crema de verduras (Zanahoria/Patata) + Pavo</td>
+<td class="col-recom">La crema es ideal para cerrar la semana.</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</section>
+
+<section class="grid grid-cols-1 md:grid-cols-2 gap-8 mt-12 mb-8">
+<div class="card bg-slate-800 text-white">
+<h3 class="text-lg font-black mb-4 uppercase flex items-center gap-2">
+<span>⚠️</span> Notas Post-Bariátricas
+</h3>
+<ul class="text-xs space-y-3 list-disc pl-4 text-slate-300">
+<li><strong>REGLA DE LÍQUIDOS:</strong> No bebas agua 30 min antes ni después de las comidas sólidas para evitar el "dumping".</li>
+<li><strong>MASTICACIÓN:</strong> Cada bocado debe ser una pasta antes de tragar.</li>
+<li><strong>PRIORIDAD PROTEICA:</strong> Si te sientes llena, deja la guarnición (patata/verdura) y termina la carne/pescado.</li>
+<li><strong>HIDRATACIÓN:</strong> 1.5L de agua al día fuera de las comidas.</li>
+</ul>
+</div>
+<div class="card bg-amber-400 text-amber-950 flex flex-col justify-center items-center text-center p-8">
+<span class="text-5xl mb-4">🏆</span>
+<h3 class="text-xl font-black uppercase">¡Tú puedes, María!</h3>
+<p class="text-sm font-bold">Cada día es una oportunidad para sentirte mejor. Sigue el plan y verás resultados poco a poco.</p>
+</div>
+</section>
+
+</main>
+
+<script>
+// Logic for Chart.js - Nutrient Composition
+const wrapLabel = (label) => {
+if (label.length <= 16) return label;
+const words = label.split(' ');
+const lines = [];
+let currentLine = '';
+words.forEach(word => {
+if ((currentLine + word).length > 16) {
+lines.push(currentLine.trim());
+currentLine = word + ' ';
+} else {
+currentLine += word + ' ';
+}
+});
+lines.push(currentLine.trim());
+return lines;
+};
+
+const tooltipTitleCallback = (tooltipItems) => {
+const item = tooltipItems[0];
+let label = item.chart.data.labels[item.dataIndex];
+return Array.isArray(label) ? label.join(' ') : label;
+};
+
+const setupCharts = () => {
+const ctxComp = document.getElementById('compositionChart').getContext('2d');
+new Chart(ctxComp, {
+type: 'doughnut',
+data: {
+labels: ['Proteína (Aves/Pescado)', 'Verduras Sin Pepino', 'Patata / Carbohidratos', 'Lácteos Desnatados', 'Frutas Permitidas'].map(wrapLabel),
+datasets: [{
+data: [40, 30, 15, 10, 5],
+backgroundColor: ['#1E88E5', '#00C853', '#FFC107', '#6366F1', '#EC4899'],
+borderWidth: 2,
+borderColor: '#ffffff'
+}]
+},
+options: {
+responsive: true,
+maintainAspectRatio: false,
+cutout: '60%',
+plugins: {
+legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 10 } } },
+tooltip: { callbacks: { title: tooltipTitleCallback } }
+}
+}
+});
+
+// Plotly.js - Frequency Analysis (Canvas/WebGL Mode)
+const plotData = [{
+x: ['Aves', 'Pescado', 'Ternera', 'Legumbres', 'Patata', 'Huevo'],
+y: [14, 10, 5, 6, 8, 4],
+type: 'bar',
+marker: { color: '#1E88E5', line: { width: 1.5 } }
+}];
+
+const plotLayout = {
+title: { text: 'Frecuencia de Alimentos (21 días)', font: { size: 14, color: '#475569', weight: 'bold' } },
+margin: { t: 40, b: 40, l: 40, r: 20 },
+font: { size: 10 },
+paper_bgcolor: 'rgba(0,0,0,0)',
+plot_bgcolor: 'rgba(0,0,0,0)',
+yaxis: { gridcolor: '#E2E8F0' },
+xaxis: { tickfont: { size: 9 } }
+};
+
+const plotConfig = { responsive: true, displayModeBar: false };
+Plotly.newPlot('frequencyPlot', plotData, plotLayout, plotConfig);
+};
+
+window.onload = setupCharts;
+</script>
+</body>
+</html>
